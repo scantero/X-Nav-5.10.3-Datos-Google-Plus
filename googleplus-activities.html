@@ -31,20 +31,21 @@
       // The provided key works for this sample only when run from
       // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
       // To use in your own application, replace this API key with your own.
-      var apiKey = '';
+      var apiKey = 'AIzaSyBAGoM7AQnX7-VkLhGMelCwX_GXam5hArY';
 
       // Use a button to handle authentication the first time.
       function handleClientLoad() {
         gapi.client.setApiKey(apiKey);
         makeApiCall();
+        getGeolocations();
       }
 
       // Load the API and make an API call.  Display the results on the screen.
       function makeApiCall() {
         gapi.client.load('plus', 'v1', function() {
           var request = gapi.client.plus.people.get({
-            'userId': ''
-            // For instance: 
+            'userId': '103846222472267112072'
+            // For instance:
             // 'userId': '+GregorioRobles'
           });
           request.execute(function(resp) {
@@ -58,9 +59,44 @@
           });
         });
       }
+      // Load the API and make an API call.  Display the results on the screen.
+      function getGeolocations() {
+        gapi.client.load('plus', 'v1', function() {
+          var request = gapi.client.plus.activities.list({
+            'userId': '103846222472267112072',
+            'collection': 'public',
+            'items' : 'location(displayName, position)'
+          });
+          request.execute(function(resp) {
+            /*Example of content of 'resp.items[i]':
+            {"location": {"displayName": "Bobwhite",
+                          "position": {"latitude": 40.723594665527344,
+                                       "longitude": -73.97897338867188}
+                         }
+            }*/
+            for (var i=0; i<resp.items.length; i++){
+              if(resp.items[i].location != null){
+                var place = resp.items[i].location.displayName;
+                var lat = resp.items[i].location.position.latitude;
+                var lon = resp.items[i].location.position.longitude;
+                var heading = document.createElement('h2');
+                var coordLa = document.createElement('p');
+                var coordLo = document.createElement('p');
+                heading.appendChild(document.createTextNode(place));
+                coordLa.appendChild(document.createTextNode("latitud: " + lat));
+                coordLo.appendChild(document.createTextNode("longitud: " + lon));
+                document.getElementById('locations').appendChild(heading);
+                document.getElementById('locations').appendChild(coordLa);
+                document.getElementById('locations').appendChild(coordLo);
+              }
+            }
+          });
+        });
+      }
     </script>
     <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
     <div id="content"></div>
-    <p>Retrieves your profile name (and picture) using the Google Plus API.</p>
+    <p>Retrieves all the locations used by the user above using the Google Plus API.</p>
+    <div id="locations"></div>
   </body>
 </html>
